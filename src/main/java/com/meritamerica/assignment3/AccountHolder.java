@@ -1,6 +1,6 @@
 package com.meritamerica.assignment3;
 
-public class AccountHolder {
+public class AccountHolder implements Comparable<AccountHolder> {
     // Instance variables
     private String firstName;
     private String middleName;
@@ -166,6 +166,56 @@ public class AccountHolder {
 	return this.getCheckingBalance() + this.getSavingsBalance() + this.getCDBalance();
     }
 
+    public static AccountHolder readFromString(String accountHolderData) throws Exception {
+	// Split data string using line break (\n) as separator.
+	String[] ahLineArray = accountHolderData.split("\n");
+	if (ahLineArray.length < 4) {
+	    throw new Exception("Invalid Account Holder input data");
+	}
+	try {
+	    int numberOfLine = 0;
+	    // Parse Account Holder first identifier line: Last,Middle,First,SSN
+	    String[] ahArray = ahLineArray[numberOfLine].split(",");
+	    AccountHolder accountHolder = new AccountHolder(ahArray[2], ahArray[1], ahArray[0], ahArray[3]);
+	    numberOfLine++;
+
+	    // Parse #ctas checks
+	    int numberOfCheckingAccounts = Integer.parseInt(ahLineArray[numberOfLine]);
+	    numberOfLine++;
+
+	    // Parse Checking accounts: Acct#, balance, interest rate, openingDate
+	    for (int i = 0; i < numberOfCheckingAccounts; i++) {
+		accountHolder.addCheckingAccount(CheckingAccount.readFromString(ahLineArray[numberOfLine]));
+		numberOfLine++;
+	    }
+
+	    // Parse #ctas savings
+	    int numberOfSavingsAccounts = Integer.parseInt(ahLineArray[numberOfLine]);
+	    numberOfLine++;
+
+	    // Parse Savings accounts: Acct#, balance, interest rate, openingDate
+	    for (int i = 0; i < numberOfSavingsAccounts; i++) {
+		accountHolder.addSavingsAccount(SavingsAccount.readFromString(ahLineArray[numberOfLine]));
+		numberOfLine++;
+	    }
+
+	    // Parse #ctas CD's
+	    int numberOfCDAccounts = Integer.parseInt(ahLineArray[numberOfLine]);
+	    numberOfLine++;
+
+	    // Parse Savings accounts: Acct#, balance, interest rate, openingDate
+	    for (int i = 0; i < numberOfCDAccounts; i++) {
+		accountHolder.addCDAccount(CDAccount.readFromString(ahLineArray[numberOfLine]));
+		numberOfLine++;
+	    }
+	    return accountHolder;
+
+	} catch (Exception ex) {
+	    throw ex;
+	}
+
+    }
+
     public String toString() {
 	String output = "Name: " + this.getFirstName() + " " + this.getMiddleName() + " " + this.getLastName() + "\n";
 	output += "SSN: " + this.getSSN() + "\n";
@@ -173,5 +223,53 @@ public class AccountHolder {
 	output += this.getSavingsAccounts().toString();
 	return output;
 
+    }
+
+    public String writeToString() {
+	String output = this.getLastName() + "," + this.getMiddleName() + "," + this.getFirstName() + ","
+		+ this.getSSN() + "\n";
+
+	// Write checking accounts that belongs to the account holder to a string
+	int numberOfCheckingAccounts = this.getNumberOfCheckingAccounts();
+	CheckingAccount[] checkingAccountArray = this.getCheckingAccounts();
+	output += numberOfCheckingAccounts + "\n";
+	for (int i = 0; i <= numberOfCheckingAccounts; i++) {
+	    output += checkingAccountArray[i].writeToString() + "\n";
+	}
+
+	// Write savings accounts that belongs to the account holder to a string
+	int numberOfSavingsAccounts = this.getNumberOfSavingsAccounts();
+	SavingsAccount[] savingsAccountArray = this.getSavingsAccounts();
+	output += numberOfSavingsAccounts + "\n";
+	for (int i = 0; i <= numberOfSavingsAccounts; i++) {
+	    output += savingsAccountArray[i].writeToString() + "\n";
+	}
+
+	// Write savings accounts that belongs to the account holder to a string
+	int numberOfCDAccounts = this.getNumberOfCDAccounts();
+	CDAccount[] cdAccountArray = this.getCDAccounts();
+	output += numberOfCDAccounts + "\n";
+	for (int i = 0; i <= numberOfCDAccounts; i++) {
+	    output += cdAccountArray[i].writeToString() + "\n";
+	}
+
+	return output;
+    }
+
+    @Override
+    public int compareTo(AccountHolder otherAccountHolder) {
+	// Compares this AccountHolder object with otherAccountHolder.
+	// Returns a negative integer, zero, or a positive integer as this instance is
+	// less than, equal to,
+	// or greater than otherAccountHolder.
+	// The AccountHolder objects are compared based on their combined balanced.
+
+	if (this.getCombinedBalance() < otherAccountHolder.getCombinedBalance()) {
+	    return -1;
+	} else if (this.getCombinedBalance() > otherAccountHolder.getCombinedBalance()) {
+	    return 1;
+	} else {
+	    return 0;
+	}
     }
 }
